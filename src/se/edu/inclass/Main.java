@@ -7,6 +7,8 @@ import se.edu.inclass.task.TaskNameComparator;
 
 import java.util.ArrayList;
 
+import static java.util.stream.Collectors.toList;
+
 public class Main {
 
     private TaskNameComparator taskNameComparator;
@@ -16,13 +18,17 @@ public class Main {
         DataManager dm = new DataManager("./data/data.txt");
         ArrayList<Task> tasksData = dm.loadData();
 
-        printData(tasksData);
-        System.out.println();
-        System.out.println("Printing deadlines");
+        System.out.println("Printing deadlines before sorting");
         printDeadlines(tasksData);
 
         System.out.println("Total number of deadlines: " + countDeadlines(tasksData));
 
+        System.out.println("Printing deadlines after sorting");
+        printDeadlinesUsingStream(tasksData);
+
+        ArrayList<Task>  filteredList = filterTaskListUsingStreams(tasksData, "11");
+        System.out.println("Filtered list of tasks:");
+        printData(filteredList);
     }
 
     private static int countDeadlines(ArrayList<Task> tasksData) {
@@ -47,5 +53,23 @@ public class Main {
                 System.out.println(t);
             }
         }
+    }
+
+    public static void printDeadlinesUsingStream(ArrayList<Task> tasks) {
+        tasks.stream()
+                .filter(t -> t instanceof Deadline)
+                .sorted( (a, b) -> a.getDescription().compareToIgnoreCase(b.getDescription()))
+                // we can add a comparator to specify how the task is compared
+                // comparator need 2 descriptors
+                .forEach(System.out::println);
+    }
+
+    public static ArrayList<Task> filterTaskListUsingStreams (ArrayList<Task> taskData, String filterString) {
+        ArrayList<Task> filteredList = (ArrayList<Task>) taskData.stream()
+                .filter(t -> t.getDescription().contains(filterString))
+                // pass a parameter through the lambda function
+                .collect(toList());
+                // then collect the result to a new list, which we can cast to arrayList
+        return filteredList;
     }
 }
