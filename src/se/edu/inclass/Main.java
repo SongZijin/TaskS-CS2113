@@ -7,6 +7,8 @@ import se.edu.inclass.task.TaskNameComparator;
 
 import java.util.ArrayList;
 
+import static java.util.stream.Collectors.toList;
+
 public class Main {
 
     private TaskNameComparator taskNameComparator;
@@ -16,16 +18,22 @@ public class Main {
         DataManager dm = new DataManager("./data/data.txt");
         ArrayList<Task> tasksData = dm.loadData();
 
+        System.out.println("Printing deadlines before sorting");
 //        printData(tasksData);
 //        printDataUsingStreams(tasksData);
 //        System.out.println();
 
         System.out.println("Printing deadlines");
         printDeadlines(tasksData);
-        printDeadlinesUsingStream(tasksData);
         System.out.println("Total number of deadlines counted using streams: "
                 + countDeadlinesUsingStream(tasksData));
 
+        System.out.println("Printing deadlines after sorting");
+        printDeadlinesUsingStream(tasksData);
+
+        ArrayList<Task>  filteredList = filterTaskListUsingStreams(tasksData, "11");
+        System.out.println("Filtered list of tasks:");
+        printData(filteredList);
     }
 
     private static int countDeadlines(ArrayList<Task> tasksData) {
@@ -67,13 +75,26 @@ public class Main {
             }
         }
     }
-
-    public static void printDeadlinesUsingStream( ArrayList<Task> tasks) {
+    
+    public static void printDeadlinesUsingStream(ArrayList<Task> tasks) {
         System.out.println("Printing Deadlines using streams");
         tasks.stream()
                 .filter(t -> t instanceof Deadline)
                 // The filter takes a predicate to filter through the data
                 // Predicate: t instanceof Deadline, which is a method
+                .sorted( (a, b) -> a.getDescription().compareToIgnoreCase(b.getDescription()))
+                // we can add a comparator to specify how the task is compared
+                // comparator need 2 descriptors
                 .forEach(System.out::println);
     }
+
+    public static ArrayList<Task> filterTaskListUsingStreams (ArrayList<Task> taskData, String filterString) {
+        ArrayList<Task> filteredList = (ArrayList<Task>) taskData.stream()
+                .filter(t -> t.getDescription().contains(filterString))
+                // pass a parameter through the lambda function
+                .collect(toList());
+                // then collect the result to a new list, which we can cast to arrayList
+        return filteredList;
+    }
+
 }
